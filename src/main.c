@@ -1,6 +1,30 @@
 #include <genesis.h>
 #include <../res/resources.h>
 
+typedef struct {
+  int x;
+  int y;
+  int w;
+  int h;
+  int velx;
+  int vely;
+  int health;
+  Sprite *sprite;
+  char name[6];
+} Entity;
+
+Entity player = {0, 0, 16, 16, 0, 0, 0, NULL, "PLAYER"};
+
+void killEntity(Entity *e) {
+  e->health = 0;
+  SPR_setVisibility(e->sprite, HIDDEN);
+}
+
+void reviveEntity(Entity *e) {
+  e->health = 1;
+  SPR_setVisibility(e->sprite, VISIBLE);
+}
+
 int main() {
   int i = 0;
   int thex = 0;
@@ -24,6 +48,16 @@ int main() {
     SYS_enableInts();
   }
 
+  SPR_init();
+
+  /*Add the player*/
+  player.x = 152;
+  player.y = 192;
+  player.health = 1;
+  player.sprite = SPR_addSprite(&ship, player.x, player.y,
+                                TILE_ATTR(PAL1, 0, FALSE, FALSE));
+  SPR_update();
+
   int offset = 0;
   SYS_disableInts();
   VDP_setScrollingMode(HSCROLL_PLANE, VSCROLL_PLANE);
@@ -36,6 +70,7 @@ int main() {
       offset = 0;
     }
 
+    SPR_update();
     SYS_doVBlankProcess();
   }
   return(0);  
