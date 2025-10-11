@@ -50,4 +50,4 @@ out/src/main.o: src/main.c /opt/toolchains/mars/m68k-elf/inc/genesis.h \
  /opt/toolchains/mars/m68k-elf/inc/config.h \
  /opt/toolchains/mars/m68k-elf/inc/string.h \
  /opt/toolchains/mars/m68k-elf/inc/maths.h \
- /opt/toolchains/mars/m68k-elf/inc/dma.h
+ /opt/toolchains/mars/m68k-elf/inc/dma.h src/../res/resources.h
