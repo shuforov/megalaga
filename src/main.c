@@ -13,6 +13,10 @@ typedef struct {
   char name[6];
 } Entity;
 
+#define MAX_ENEMIES 6
+Entity enemies[MAX_ENEMIES];
+u16 enemiesLeft = 0;
+
 Entity player = {0, 0, 16, 16, 0, 0, 0, NULL, "PLAYER"};
 
 void killEntity(Entity *e) {
@@ -35,7 +39,8 @@ int main() {
   VDP_loadTileSet(background.tileset, 1, DMA);
   SYS_enableInts();
   PAL_setPalette(PAL1, background.palette->data, DMA);
-
+  PAL_setPalette(PAL2, background.palette->data, DMA);
+  
   for (i = 0; i < 1280; i++) {
     thex = i % 40;
     they = i / 40;
@@ -56,6 +61,23 @@ int main() {
   player.health = 1;
   player.sprite = SPR_addSprite(&ship, player.x, player.y,
                                 TILE_ATTR(PAL1, 0, FALSE, FALSE));
+
+  /*Create all enemy sprites*/
+  Entity *e = enemies;
+  for (i = 0; i < MAX_ENEMIES; i++) {
+    e->x = i * 32;
+    e->y = 32;
+    e->w = 16;
+    e->h = 16;
+    e->velx = 1;
+    e->health = 1;
+    e->sprite = SPR_addSprite(&ship,e->x,e->y,TILE_ATTR(PAL2,0,TRUE,FALSE));
+    sprintf(e->name, "En%d", i);
+    enemiesLeft++;
+    e++;
+  }
+  PAL_setColor(34, RGB24_TO_VDPCOLOR(0x0078f8));
+
   SPR_update();
 
   int offset = 0;
