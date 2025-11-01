@@ -14,6 +14,11 @@ typedef struct {
 } Entity;
 
 #define MAX_ENEMIES 6
+#define LEFT_EDGE 0
+#define RIGHT_EDGE 320
+#define ANIM_STRAIGHT 0
+#define ANIM_MOVE 1
+
 Entity enemies[MAX_ENEMIES];
 u16 enemiesLeft = 0;
 
@@ -29,11 +34,63 @@ void reviveEntity(Entity *e) {
   SPR_setVisibility(e->sprite, VISIBLE);
 }
 
+void positionEnemies() {
+  u16 i = 0;
+  for (i = 0; i < MAX_ENEMIES; i++) {
+    Entity *e = &enemies[i];
+    if (e->health > 0) {
+      if ((e->x + e->w) > RIGHT_EDGE) {
+        e->velx = -1;
+      } else if (e->x < LEFT_EDGE) {
+        e->velx = 1;
+      }
+      e->x += e->velx;
+      SPR_setPosition(e->sprite, e->x, e->y);
+    }
+  }
+}
+
+void positionPlayer() {
+  /*Add the player's velocity to its position*/
+  player.x += player.velx;
+
+  /*Keep the player within the bounds of the screen*/
+  if (player.x < LEFT_EDGE)
+    player.x = LEFT_EDGE;
+  if (player.x + player.w > RIGHT_EDGE)
+    player.x = RIGHT_EDGE - player.w;
+
+  /*Let the Sprite engine position the sprite*/
+  SPR_setPosition(player.sprite, player.x, player.y);
+}
+
+void myJoyHandler(u16 joy, u16 changed, u16 state) {
+  if (joy == JOY_1) {
+    if (state & BUTTON_RIGHT) {
+      player.velx = 2;
+      SPR_setAnim(player.sprite, ANIM_MOVE);
+      SPR_setHFlip(player.sprite, TRUE);
+    } else if (state & BUTTON_LEFT) {
+      player.velx = -2;
+      SPR_setAnim(player.sprite, ANIM_MOVE);
+      SPR_setHFlip(player.sprite, FALSE);
+    } else {
+      if ((changed & BUTTON_RIGHT) | (changed & BUTTON_LEFT)) {
+        player.velx = 0;
+        SPR_setAnim(player.sprite, ANIM_STRAIGHT);
+      }
+    }
+  }
+}
+
 int main() {
   int i = 0;
   int thex = 0;
   int they = 0;
   int val = 1;
+
+  JOY_init();
+  JOY_setEventHandler(&myJoyHandler);
 
   SYS_disableInts();
   VDP_loadTileSet(background.tileset, 1, DMA);
@@ -92,8 +149,10 @@ int main() {
       offset = 0;
     }
 
+    positionPlayer();
+    positionEnemies();
     SPR_update();
     SYS_doVBlankProcess();
   }
-  return(0);  
-}  
+  return(0);
+}
